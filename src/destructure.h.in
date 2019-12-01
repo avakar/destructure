@@ -1,0 +1,85 @@
+#ifndef AVAKAR_DESTRUCTURE_${count}_H
+#define AVAKAR_DESTRUCTURE_${count}_H
+
+#include <cstddef>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+
+namespace avakar {
+
+namespace _destructure_${count} {
+
+template <std::size_t>
+struct any
+{
+	template <typename T>
+	operator T() const;
+};
+
+template <typename T, typename In, typename = void>
+struct has_n_members
+	: std::false_type
+{
+};
+
+template <typename T, typename In>
+struct has_n_members<T &, In>
+	: has_n_members<T, In>
+{
+};
+
+template <typename T, typename In>
+struct has_n_members<T &&, In>
+	: has_n_members<T, In>
+{
+};
+
+template <typename T, std::size_t... In>
+struct has_n_members<T, std::index_sequence<In...>, std::void_t<decltype(T{any<In>()...})>>
+	: std::true_type
+{
+};
+
+template <typename T, std::size_t N>
+constexpr bool has_n_members_v = has_n_members<T, std::make_index_sequence<N>>::value;
+
+struct untie
+{
+	template <typename... Tn>
+	std::tuple<Tn...> operator()(Tn &... an)
+	{
+		return std::tuple<Tn...>(std::move(an)...);
+	}
+};
+
+}
+
+${inline}namespace destructure_${count} {
+
+template <typename T>
+auto destructure(T & t)
+{
+	using namespace _destructure_${count};
+
+	if constexpr(has_n_members_v<T, ${count}>)
+	{
+		static_assert(!has_n_members_v<T, ${count}>);
+	}
+${here}	else
+	{
+		return std::tuple{};
+	}
+}
+
+}
+
+template <typename T>
+auto destructure(T && t)
+{
+	return std::apply(_destructure_${count}::untie(), destructure(t));
+}
+
+}
+
+#endif

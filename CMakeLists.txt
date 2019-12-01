@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.12)
+project(avakar_destructure)
+
+add_library(avakar_destructure INTERFACE)
+target_compile_features(avakar_destructure INTERFACE cxx_std_17)
+target_include_directories(avakar_destructure INTERFACE include)
+
+add_executable(avakar_unstruct_test test/test.cpp)
+target_link_libraries(avakar_unstruct_test PUBLIC avakar_destructure)
